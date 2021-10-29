@@ -1,0 +1,52 @@
+{
+  "name": "bmpr_arcgis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --max_old_space_size=8000 node_modules/webpack/bin/webpack.js serve --config webpack.dev.js",
+    "build": "SET NODE_OPTIONS=\"--max-old-space-size=10240\" && webpack --config webpack.prod.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@arcgis/webpack-plugin": "^4.19.1",
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.5",
+    "babel-loader": "^8.2.2",
+    "compression-webpack-plugin": "^8.0.1",
+    "copy-webpack-plugin": "^9.0.0",
+    "css-loader": "^5.2.6",
+    "dotenv-webpack": "^7.0.3",
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.3.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.39.0",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^4.3.0",
+    "webpack-merge": "^5.8.0"
+  },
+  "dependencies": {
+    "@arcgis/core": "^4.20.1",
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "axios": "^0.21.4",
+    "bootstrap": "^5.0.2",
+    "esri-leaflet": "^3.0.2",
+    "esri-leaflet-geocoder": "^3.0.0",
+    "jquery": "^3.6.0",
+    "leaflet": "^1.7.1",
+    "leaflet-control-custom": "^1.0.0",
+    "leaflet-routing-machine": "^3.2.12",
+    "leaflet-search": "^2.9.9",
+    "leaflet.locatecontrol": "^0.74.0",
+    "micromodal": "^0.4.6",
+    "moment": "^2.29.1",
+    "shepherd.js": "^8.3.1",
+    "sweetalert2": "^11.1.7",
+    "toastr": "^2.1.4"
+  }
+}

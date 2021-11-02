@@ -9,7 +9,7 @@ const { default: axios } = require('axios');
 const GeoJsonServices = {
   async getRuasJalanPropinsi() {
     const response = await axios.get(
-      `${process.env.API_URL}map/geojson/ruas_jalan_propinsi`,
+      `${process.env.API_TJ_URL}map/geojson/ruas_jalan_propinsi`,
     );
     const geoJsonMap = geoJsonPropinsi.map((geoJson) => {
       const properties = response.data.data.ruas_jalan_propinsi.filter(
@@ -45,7 +45,7 @@ const GeoJsonServices = {
   },
   async getRuasJalanCustom() {
     const response = await axios.get(
-      `${process.env.API_URL}map/geojson/ruas_jalan_custom`,
+      `${process.env.API_TJ_URL}map/geojson/ruas_jalan_custom`,
     );
     const geoJsonMap = response.data.data.ruas_jalan_custom.map((geoJson) => {
       const properties = {

@@ -4,13 +4,13 @@ import CONFIG from '../../globals/config';
 
 const KegiatanServices = {
   async getPemeliharaan({ ruas_jalan, date_from, date_to }) {
-    const response = await axios.get(`${CONFIG.API_URL}map/pemeliharaan`, {
+    const response = await axios.get(`${CONFIG.API_TJ_URL}map/pemeliharaan`, {
       params: { ruas_jalan, date_from, date_to },
     });
     return response.data.data.pemeliharaan;
   },
   async getPembangunan({ ruas_jalan, date_from, date_to }) {
-    const response = await axios.get(`${CONFIG.API_URL}map/pembangunan`, {
+    const response = await axios.get(`${CONFIG.API_TJ_URL}map/pembangunan`, {
       params: { ruas_jalan, date_from, date_to },
     });
     return response.data.data.pembangunan;
@@ -24,7 +24,7 @@ const KegiatanServices = {
   async getBankeu({
     ruas_jalan_custom_id, geo_id, date_from, date_to,
   }) {
-    const response = await axios.get(`${CONFIG.API_URL}map/bankeu`, {
+    const response = await axios.get(`${CONFIG.API_TJ_URL}map/bankeu`, {
       params: {
         ruas_jalan_custom_id, geo_id, date_from, date_to,
       },

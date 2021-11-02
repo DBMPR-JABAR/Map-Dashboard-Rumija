@@ -23,6 +23,7 @@ import legendRuasJalan from './maps/widgets/legendRuasJalan.widget';
 import ruasJalanNasionalGeoJson from './maps/layers/geoJson/ruasJalanNasional.geoJson';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
+import InventarisServices from './data/services/InventarisServices';
 
 Toastr.options.positionClass = 'toast-top-left';
 let activeHighlight = null;
@@ -40,6 +41,7 @@ const App = async () => {
   const filterPanelBody = document.getElementById('filterPanelBody');
 
   const rumijaLayer = layerGroup([]);
+  const inventarisRumijaLayer = layerGroup([]);
 
   const setRumijaLayer = (rumijaData) => {
     rumijaLayer.clearLayers();
@@ -53,6 +55,38 @@ const App = async () => {
       rumijaLayer.addLayer(layer);
     });
     rumijaLayer.addTo(map);
+  };
+
+  const setInventarisRumijaLayer = (rumijaInventarisByCategory) => {
+    inventarisRumijaLayer.clearLayers();
+    const categories = Object.keys(rumijaInventarisByCategory.data);
+    categories.forEach((category) => {
+      const datas = rumijaInventarisByCategory.data[category];
+      datas?.data?.forEach((data) => {
+        if (data.lat && data.lng) {
+          if (datas.type === 'marker') {
+            const layer = marker(
+              [data.lat, data.lng], {
+                icon: icon({
+                  iconUrl: datas.icon_url || 'images/markers/rumija.png',
+                  iconSize: [32, 32],
+                }),
+              },
+            )
+              .bindPopup(data.popup);
+            inventarisRumijaLayer.addLayer(layer);
+          } else {
+            const layer = L.polyline([
+              [data.lat, data.lng],
+              [data.lat_akhir, data.lng_akhir],
+            ], { color: datas.color });
+            inventarisRumijaLayer.addLayer(layer);
+          }
+        }
+      });
+    });
+    $('#debug_test').text(JSON.stringify(rumijaInventarisByCategory));
+    inventarisRumijaLayer.addTo(map);
   };
 
   const onFilterSubmit = ({ properties }) => {
@@ -69,6 +103,13 @@ const App = async () => {
     });
   };
 
+  const onSubmitInventarisCategories = ({ ruasJalanId, categoriesId }) => {
+    InventarisServices.getInventarisRumijaByCategories({ ruasJalanId, categoriesId })
+      .then((results) => {
+        setInventarisRumijaLayer(results);
+      });
+  };
+
   const onFilterRuasSubmit = ({ properties }) => {
     const resultsContainer = document.getElementById('results_filter_ruas');
     resultsContainer.innerHTML = null;
@@ -77,11 +118,19 @@ const App = async () => {
   const openFilterPanel = (properties) => {
     filterPanelLabel.innerText = properties.nama_ruas_jalan;
     filterPanelBody.innerHTML = panelFilterBodyTemplate(properties);
-    const filterSubmitButton = document.getElementById('filter_sumbit_button');
-    filterSubmitButton.addEventListener('click', () => {
-      onFilterSubmit({ properties });
-    });
+    // const filterSubmitButton = document.getElementById('filter_sumbit_button');
+    // filterSubmitButton.addEventListener('click', () => {
+    //   onFilterSubmit({ properties });
+    // });
     onFilterSubmit({ properties });
+    const inventarisSubmitButton = document.getElementById('inventaris_sumbit_button');
+    inventarisSubmitButton.addEventListener('click', () => {
+      const selectedInventarisCategoryId = $('#inventaris_rumija_select').val();
+      onSubmitInventarisCategories({
+        ruasJalanId: properties.id_ruas_jalan,
+        categoriesId: selectedInventarisCategoryId,
+      });
+    });
     filterPanel.toggle();
   };
 
@@ -159,7 +208,7 @@ const App = async () => {
       String(e.popup?._source?.feature?.id || '').includes(
         'ruas_jalan_kab_kota_tarung',
       )
-            || String(e.popup?._source?.feature?.id || '').includes('ruas_jalan_custom')
+      || String(e.popup?._source?.feature?.id || '').includes('ruas_jalan_custom')
     ) {
       const { properties } = e.popup._source.feature;
       const openFilterPanelIcon = document.getElementById(
@@ -186,22 +235,26 @@ const App = async () => {
         resolve(() => ruasJalanPropinsi.resetStyle(layer));
         break;
       default: {
-        if (String(layer.feature.id).includes('ruas_jalan_kab_kota_tarung')) resolve(() => ruasJalanKabKotaTarung.resetStyle(layer));
-        else if (String(layer.feature.id).includes('ruas_jalan_nasional')) resolve(() => ruasJalanNasional.resetStyle(layer));
-        else if (
+        if (String(layer.feature.id).includes('ruas_jalan_kab_kota_tarung')) {
+          resolve(() => ruasJalanKabKotaTarung.resetStyle(layer));
+        } else if (String(layer.feature.id).includes('ruas_jalan_nasional')) {
+          resolve(() => ruasJalanNasional.resetStyle(layer));
+        } else if (
           String(layer.feature.id).includes('ruas_jalan_tol_konstruksi')
-        ) resolve(() => ruasJalanTolKonstruksi.resetStyle(layer));
-        else if (
+        ) {
+          resolve(() => ruasJalanTolKonstruksi.resetStyle(layer));
+        } else if (
           String(layer.feature.id).includes('ruas_jalan_tol_operasional')
-        ) resolve(() => ruasJalanTolOperasional.resetStyle(layer));
+        ) { resolve(() => ruasJalanTolOperasional.resetStyle(layer)); }
         resolve(true);
       }
     }
   });
 
   const styleHighlight = {
-    color: 'green',
-    weight: 3,
+    weight: 6,
+    opacity: 0.7,
+    fillOpacity: 0.8,
   };
 
   const ruasJalan = layerGroup([
@@ -294,7 +347,9 @@ const App = async () => {
 
   const getRoute = (e) => {
     const { lat, lng } = e.latlng;
-    if (theMarker !== undefined) { map.removeLayer(theMarker); }
+    if (theMarker !== undefined) {
+      map.removeLayer(theMarker);
+    }
     theMarker = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
     const { lat: endLat, lng: endLng } = theMarker._latlng;
     oldRouteLocation.end = L.latLng(endLat, endLng);
@@ -303,14 +358,16 @@ const App = async () => {
         map.removeControl(routingControl);
         routingControl = null;
       }
-
-      console.log(oldRouteLocation.start, oldRouteLocation.end);
       routingControl = L.Routing.control({
-        createMarker() { return null; },
+        createMarker() {
+          return null;
+        },
         waypoints: [oldRouteLocation.start, oldRouteLocation.end],
       }).addTo(map);
       if (containerRouteControl().is(':empty')) {
-        containerRouteControl().html('<span class="text-center"><i class="fa fa-spinner fa-spin p-2"></i>Sedang mencari route..</span>');
+        containerRouteControl().html(
+          '<span class="text-center"><i class="fa fa-spinner fa-spin p-2"></i>Sedang mencari route..</span>',
+        );
       }
     }
   };
@@ -324,15 +381,18 @@ const App = async () => {
     }
 
     oldRouteLocation.start = L.latLng(startLat, startLng);
-    console.log('cL', oldRouteLocation.start, oldRouteLocation.end);
 
     if (oldRouteLocation.end != null) {
       routingControl = L.Routing.control({
-        createMarker() { return null; },
+        createMarker() {
+          return null;
+        },
         waypoints: [oldRouteLocation.start, oldRouteLocation.end],
       }).addTo(map);
       if (containerRouteControl().is(':empty')) {
-        containerRouteControl().html('<span class="text-center"><i class="fa fa-spinner fa-spin p-2"></i>Sedang mencari route..</span>');
+        containerRouteControl().html(
+          '<span class="text-center"><i class="fa fa-spinner fa-spin p-2"></i>Sedang mencari route..</span>',
+        );
       }
     }
   });
@@ -341,9 +401,9 @@ const App = async () => {
     .custom({
       position: 'topleft',
       content:
-                '<button id="go-to-button" type="button" class="btn btn-default">'
-                + '    <i id="go-to-icon" class="fa fa-location-arrow"></i>'
-                + '</button>',
+        '<button id="go-to-button" type="button" class="btn btn-default">'
+        + '    <i id="go-to-icon" class="fa fa-location-arrow"></i>'
+        + '</button>',
       classes: 'btn-group-vertical btn-group-sm card shadow leaflet-bar',
       style: {
         margin: '10px',
@@ -355,15 +415,14 @@ const App = async () => {
       },
       events: {
         click(data) {
-          console.log('wrapper div element clicked');
-          console.log(data.target.id);
           if (data.target.id === 'go-to-icon') {
-            if (!activeLocation()) Toastr.error('Aktifkan terlebih dahulu current location');
-            else {
+            if (!activeLocation()) { Toastr.error('Aktifkan terlebih dahulu current location'); } else {
               const goToBotton = $('#go-to-button');
               if (goToBotton.hasClass('text-success')) {
                 map.off('click', getRoute);
-                if (theMarker !== undefined) { map.removeLayer(theMarker); }
+                if (theMarker !== undefined) {
+                  map.removeLayer(theMarker);
+                }
                 if (routingControl != null) {
                   map.removeControl(routingControl);
                   routingControl = null;

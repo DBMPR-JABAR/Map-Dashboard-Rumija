@@ -65,17 +65,25 @@ const App = async () => {
       datas?.data?.forEach((data) => {
         if (data.lat && data.lng) {
           if (datas.type === 'marker') {
-            const layer = marker(
-              [data.lat, data.lng], {
-                icon: icon({
-                  iconUrl: datas.icon_url || 'images/markers/rumija.png',
-                  iconSize: [32, 32],
-                }),
-              },
-            )
+            // const layer = marker(
+            //   [data.lat, data.lng], {
+            //     icon: icon({
+            //       iconUrl: datas.icon_url || 'images/markers/rumija.png',
+            //       iconSize: [32, 32],
+            //     }),
+            //   },
+            // )
+            // .bindPopup(data.popup);
+            const layer = L.circleMarker([data.lat, data.lng], {
+              radius: 5,
+              fillColor: data.color,
+              color: data.color,
+              weight: 1,
+              opacity: 1,
+            })
               .bindPopup(data.popup);
             inventarisRumijaLayer.addLayer(layer);
-          } else {
+          } else if (data.lat_akhir && data.lng_akhir) {
             const layer = L.polyline([
               [data.lat, data.lng],
               [data.lat_akhir, data.lng_akhir],
@@ -85,7 +93,7 @@ const App = async () => {
         }
       });
     });
-    $('#debug_test').text(JSON.stringify(rumijaInventarisByCategory));
+    // $('#debug_test').text(JSON.stringify(rumijaInventarisByCategory));
     inventarisRumijaLayer.addTo(map);
   };
 

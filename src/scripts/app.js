@@ -24,6 +24,7 @@ import ruasJalanNasionalGeoJson from './maps/layers/geoJson/ruasJalanNasional.ge
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import InventarisServices from './data/services/InventarisServices';
+import flLeger from './data/geoJson/flLeger';
 
 Toastr.options.positionClass = 'toast-top-left';
 let activeHighlight = null;
@@ -65,35 +66,40 @@ const App = async () => {
       datas?.data?.forEach((data) => {
         if (data.lat && data.lng) {
           if (datas.type === 'marker') {
-            // const layer = marker(
-            //   [data.lat, data.lng], {
-            //     icon: icon({
-            //       iconUrl: datas.icon_url || 'images/markers/rumija.png',
-            //       iconSize: [32, 32],
-            //     }),
-            //   },
-            // )
-            // .bindPopup(data.popup);
-            const layer = L.circleMarker([data.lat, data.lng], {
-              radius: 5,
-              fillColor: data.color,
-              color: data.color,
-              weight: 1,
-              opacity: 1,
-            })
-              .bindPopup(data.popup);
+            let layer;
+            if (datas.icon_url) {
+              layer = marker([data.lat, data.lng], {
+                icon: icon({
+                  iconUrl: datas.icon_url,
+                  iconSize: [32, 32],
+                }),
+              })
+            } else {
+              layer = L.circleMarker([data.lat, data.lng], {
+                radius: 5,
+                fillColor: data.color,
+                color: data.color,
+                weight: 1,
+                opacity: 1,
+              })
+            }
+            layer.bindPopup(data.popup)
             inventarisRumijaLayer.addLayer(layer);
           } else if (data.lat_akhir && data.lng_akhir) {
+            // console.log(data)
             const layer = L.polyline([
               [data.lat, data.lng],
               [data.lat_akhir, data.lng_akhir],
-            ], { color: datas.color });
+            ], {
+              color: datas.color,
+              weight: datas.title === 'BAHU JALAN' ? Number(data.lebar) : 1
+            })
+              .bindPopup(data.popup);
             inventarisRumijaLayer.addLayer(layer);
           }
         }
       });
     });
-    // $('#debug_test').text(JSON.stringify(rumijaInventarisByCategory));
     inventarisRumijaLayer.addTo(map);
   };
 
@@ -455,6 +461,8 @@ const App = async () => {
       },
     })
     .addTo(map);
+
+  flLeger.addTo(map);
 };
 
 export default App;

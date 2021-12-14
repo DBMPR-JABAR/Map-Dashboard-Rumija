@@ -24,7 +24,7 @@ import ruasJalanNasionalGeoJson from './maps/layers/geoJson/ruasJalanNasional.ge
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 import InventarisServices from './data/services/InventarisServices';
-import flLeger from './data/geoJson/flLeger';
+import flLegers from './data/geoJson/flLegers';
 
 Toastr.options.positionClass = 'toast-top-left';
 let activeHighlight = null;
@@ -462,7 +462,7 @@ const App = async () => {
     })
     .addTo(map);
 
-  flLeger.addTo(map);
+  flLegers.forEach((fl) => { fl.addTo(map); });
 };
 
 export default App;
